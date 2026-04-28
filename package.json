@@ -9,7 +9,7 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "typecheck": "nuxt typecheck",
-    "openapi:an-ercom": "pnpm tsx ./s-openapi.ts http://localhost:9001/api-docs-json ./schemas/anErcom.json"
+    "openapi:an-ercom": "pnpm tsx ./s-openapi.ts https://be-an-ercom.vercel.app/api-docs-json ./schemas/anErcom.json"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.104",

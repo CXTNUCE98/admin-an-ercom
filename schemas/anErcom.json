@@ -629,62 +629,6 @@
         ]
       }
     },
-    "/products/{id}/images": {
-      "post": {
-        "operationId": "ProductController_uploadImages",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Upload ảnh sản phẩm lên Cloudinary",
-        "tags": [
-          "Sản phẩm (Products)"
-        ]
-      },
-      "delete": {
-        "operationId": "ProductController_removeImage",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Xóa một ảnh khỏi sản phẩm",
-        "tags": [
-          "Sản phẩm (Products)"
-        ]
-      }
-    },
     "/orders": {
       "post": {
         "operationId": "OrderController_create",
@@ -995,6 +939,29 @@
       "post": {
         "operationId": "UploadController_uploadImages",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Danh sách file ảnh (tối đa 10)"
+                  }
+                },
+                "required": [
+                  "images"
+                ]
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": ""
