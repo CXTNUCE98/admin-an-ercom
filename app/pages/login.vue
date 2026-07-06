@@ -63,10 +63,7 @@ async function onSubmit() {
 
     <template #footer>
       <p class="text-sm text-center text-muted">
-        Chưa có tài khoản?
-        <NuxtLink to="/register" class="text-primary font-medium hover:underline">
-          Đăng ký
-        </NuxtLink>
+        Chỉ dành cho quản trị viên. Liên hệ super-admin nếu cần cấp tài khoản.
       </p>
     </template>
   </UCard>

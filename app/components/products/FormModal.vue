@@ -39,6 +39,30 @@ const state = reactive<Partial<Schema>>({
   isNew: false, isBestSeller: false, isLuxury: false
 })
 
+// ─── Specs / Tags / Highlights ──────────────────────────────────────────────
+const specs = ref<{ label: string, value: string }[]>([])
+const tags = ref<string[]>([])
+const highlights = ref<string[]>([])
+const tagInput = ref('')
+const highlightInput = ref('')
+
+function addSpec() { specs.value.push({ label: '', value: '' }) }
+function removeSpec(i: number) { specs.value.splice(i, 1) }
+
+function addTag() {
+  const v = tagInput.value.trim()
+  if (v && !tags.value.includes(v)) tags.value.push(v)
+  tagInput.value = ''
+}
+function removeTag(i: number) { tags.value.splice(i, 1) }
+
+function addHighlight() {
+  const v = highlightInput.value.trim()
+  if (v) highlights.value.push(v)
+  highlightInput.value = ''
+}
+function removeHighlight(i: number) { highlights.value.splice(i, 1) }
+
 // ─── Images ───────────────────────────────────────────────────────────────────
 const imageUrls = ref<string[]>([])
 const fileInputRef = ref<HTMLInputElement | null>(null)
@@ -89,6 +113,9 @@ watch(() => props.product, (p) => {
       isNew: p.isNew, isBestSeller: p.isBestSeller, isLuxury: p.isLuxury
     })
     imageUrls.value = [...(p.images ?? [])]
+    specs.value = (p.specs ?? []).map(s => ({ label: s.label, value: s.value }))
+    tags.value = [...(p.tags ?? [])]
+    highlights.value = [...(p.highlights ?? [])]
     priceDisplay.value = formatVND(p.price)
     salePriceDisplay.value = formatVND(p.salePrice)
   } else {
@@ -98,6 +125,9 @@ watch(() => props.product, (p) => {
       videoUrl: '', isNew: false, isBestSeller: false, isLuxury: false
     })
     imageUrls.value = []
+    specs.value = []
+    tags.value = []
+    highlights.value = []
     priceDisplay.value = ''
     salePriceDisplay.value = ''
   }
@@ -122,8 +152,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     ...event.data,
     images: imageUrls.value,
     videoUrl: event.data.videoUrl || undefined,
-    tags: [],
-    highlights: []
+    specs: specs.value.filter(s => s.label.trim() && s.value.trim()),
+    tags: tags.value,
+    highlights: highlights.value
   }
 
   if (isEdit.value && props.product) {
@@ -186,6 +217,57 @@ const statusOptions = [
           <UFormField label="Mô tả" name="description" class="col-span-2">
             <UTextarea v-model="state.description" class="w-full" :rows="3" />
           </UFormField>
+
+          <!-- Thông số kỹ thuật (specs) -->
+          <div class="col-span-2 space-y-2">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-medium">Thông số kỹ thuật</p>
+              <UButton type="button" icon="i-lucide-plus" label="Thêm dòng" size="xs" color="neutral" variant="outline" @click="addSpec" />
+            </div>
+            <div v-for="(spec, i) in specs" :key="i" class="flex items-center gap-2">
+              <UInput v-model="spec.label" placeholder="Nhãn (VD: Bộ máy)" class="flex-1" />
+              <UInput v-model="spec.value" placeholder="Giá trị (VD: Automatic)" class="flex-1" />
+              <UButton type="button" icon="i-lucide-trash" size="xs" color="error" variant="ghost" @click="removeSpec(i)" />
+            </div>
+            <p v-if="!specs.length" class="text-xs text-muted">Chưa có thông số nào.</p>
+          </div>
+
+          <!-- Tags -->
+          <div class="col-span-2 space-y-2">
+            <p class="text-sm font-medium">Tags</p>
+            <div v-if="tags.length" class="flex flex-wrap gap-1.5">
+              <UBadge v-for="(t, i) in tags" :key="t" color="neutral" variant="subtle" class="gap-1">
+                {{ t }}
+                <button type="button" class="hover:text-error" @click="removeTag(i)">
+                  <UIcon name="i-lucide-x" class="size-3" />
+                </button>
+              </UBadge>
+            </div>
+            <UInput
+              v-model="tagInput"
+              placeholder="Nhập tag rồi Enter"
+              icon="i-lucide-tag"
+              @keydown.enter.prevent="addTag"
+            />
+          </div>
+
+          <!-- Highlights -->
+          <div class="col-span-2 space-y-2">
+            <p class="text-sm font-medium">Điểm nổi bật</p>
+            <ul v-if="highlights.length" class="space-y-1">
+              <li v-for="(h, i) in highlights" :key="i" class="flex items-center gap-2 text-sm">
+                <UIcon name="i-lucide-check" class="text-primary size-4" />
+                <span class="flex-1">{{ h }}</span>
+                <UButton type="button" icon="i-lucide-x" size="xs" color="error" variant="ghost" @click="removeHighlight(i)" />
+              </li>
+            </ul>
+            <UInput
+              v-model="highlightInput"
+              placeholder="Nhập điểm nổi bật rồi Enter"
+              icon="i-lucide-sparkles"
+              @keydown.enter.prevent="addHighlight"
+            />
+          </div>
 
           <!-- Ảnh sản phẩm -->
           <div class="col-span-2 space-y-2">

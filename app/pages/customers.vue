@@ -142,9 +142,6 @@ const columns: TableColumn<Customer>[] = [
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
-        <template #right>
-          <CustomersAddModal />
-        </template>
       </UDashboardNavbar>
     </template>
 

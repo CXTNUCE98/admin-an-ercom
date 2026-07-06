@@ -1,8 +1,3 @@
-import type { AvatarProps } from '@nuxt/ui'
-
-export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
-export type SaleStatus = 'paid' | 'failed' | 'refunded'
-
 // ─── Product domain ───────────────────────────────────────────────────────────
 
 export type CategorySlug = 'watches' | 'zippo' | 'glasses' | 'belts' | 'wallets' | 'hats'
@@ -55,13 +50,60 @@ export interface ProductsResponse {
   totalPages: number
 }
 
-export interface User {
-  id: number
-  name: string
-  email: string
-  avatar?: AvatarProps
-  status: UserStatus
-  location: string
+// ─── Order domain ───────────────────────────────────────────────────────────
+
+export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED'
+export type PaymentMethod = 'COD' | 'BANK_TRANSFER' | 'MOMO'
+
+export interface OrderItem {
+  id: string
+  quantity: number
+  price: number
+  product: {
+    id: string
+    name: string
+    slug: string
+    images: string[]
+    brand: string
+  } | null
+}
+
+export interface Order {
+  id: string
+  userId: string
+  status: OrderStatus
+  totalPrice: number
+  shippingAddress: string
+  phone: string
+  note?: string | null
+  paymentMethod: PaymentMethod
+  createdAt: string
+  updatedAt: string
+  items: OrderItem[]
+  user: {
+    id: string
+    fullName: string
+    email: string
+    phone: string | null
+  } | null
+}
+
+export interface OrdersResponse {
+  items: Order[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export interface OrderStats {
+  total: number
+  pending: number
+  confirmed: number
+  shipping: number
+  delivered: number
+  cancelled: number
+  totalRevenue: number
 }
 
 export interface Customer {
@@ -76,49 +118,3 @@ export interface Customer {
   _count: { orders: number }
 }
 
-export interface Mail {
-  id: number
-  unread?: boolean
-  from: User
-  subject: string
-  body: string
-  date: string
-}
-
-export interface Member {
-  name: string
-  username: string
-  role: 'member' | 'owner'
-  avatar: AvatarProps
-}
-
-export interface Stat {
-  title: string
-  icon: string
-  value: number | string
-  variation: number
-  formatter?: (value: number) => string
-}
-
-export interface Sale {
-  id: string
-  date: string
-  status: SaleStatus
-  email: string
-  amount: number
-}
-
-export interface Notification {
-  id: number
-  unread?: boolean
-  sender: User
-  body: string
-  date: string
-}
-
-export type Period = 'daily' | 'weekly' | 'monthly'
-
-export interface Range {
-  start: Date
-  end: Date
-}

@@ -22,6 +22,7 @@ export const useAuth = () => {
   const user = useState<AuthUser | null>('auth_user', () => null)
 
   const isLoggedIn = computed(() => !!token.value)
+  const isAdmin = computed(() => user.value?.role === 'ADMIN')
 
   // Query: lấy thông tin user hiện tại
   const { refetch: refetchMe } = useQuery({
@@ -114,6 +115,7 @@ export const useAuth = () => {
     token,
     user,
     isLoggedIn,
+    isAdmin,
     login,
     register,
     fetchMe,

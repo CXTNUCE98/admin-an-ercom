@@ -1,69 +1,89 @@
 <script setup lang="ts">
 import * as z from 'zod'
-import type { FormError } from '@nuxt/ui'
+import type { FormSubmitEvent } from '@nuxt/ui'
+import { useProfileMutations } from '~/composables/useProfile'
 
-const passwordSchema = z.object({
-  current: z.string().min(8, 'Must be at least 8 characters'),
-  new: z.string().min(8, 'Must be at least 8 characters')
+const { changePassword } = useProfileMutations()
+
+const schema = z.object({
+  oldPassword: z.string().min(1, 'Bắt buộc'),
+  newPassword: z.string().min(6, 'Tối thiểu 6 ký tự'),
+  confirm: z.string()
+}).refine(d => d.newPassword === d.confirm, {
+  message: 'Xác nhận mật khẩu không khớp',
+  path: ['confirm']
 })
 
-type PasswordSchema = z.output<typeof passwordSchema>
+type Schema = z.output<typeof schema>
 
-const password = reactive<Partial<PasswordSchema>>({
-  current: '',
-  new: ''
+const state = reactive<Partial<Schema>>({
+  oldPassword: '',
+  newPassword: '',
+  confirm: ''
 })
 
-const validate = (state: Partial<PasswordSchema>): FormError[] => {
-  const errors: FormError[] = []
-  if (state.current && state.new && state.current === state.new) {
-    errors.push({ name: 'new', message: 'Passwords must be different' })
-  }
-  return errors
+async function onSubmit(event: FormSubmitEvent<Schema>) {
+  await changePassword.mutateAsync({
+    oldPassword: event.data.oldPassword,
+    newPassword: event.data.newPassword
+  })
+  state.oldPassword = ''
+  state.newPassword = ''
+  state.confirm = ''
 }
 </script>
 
 <template>
-  <UPageCard
-    title="Password"
-    description="Confirm your current password before setting a new one."
-    variant="subtle"
+  <UForm
+    id="settings-security"
+    :schema="schema"
+    :state="state"
+    @submit="onSubmit"
   >
-    <UForm
-      :schema="passwordSchema"
-      :state="password"
-      :validate="validate"
-      class="flex flex-col gap-4 max-w-xs"
+    <UPageCard
+      title="Bảo mật"
+      description="Đổi mật khẩu tài khoản quản trị."
+      variant="naked"
+      orientation="horizontal"
+      class="mb-4"
     >
-      <UFormField name="current">
-        <UInput
-          v-model="password.current"
-          type="password"
-          placeholder="Current password"
-          class="w-full"
-        />
+      <UButton
+        form="settings-security"
+        label="Đổi mật khẩu"
+        color="neutral"
+        type="submit"
+        :loading="changePassword.isPending.value"
+        class="w-fit lg:ms-auto"
+      />
+    </UPageCard>
+
+    <UPageCard variant="subtle">
+      <UFormField
+        name="oldPassword"
+        label="Mật khẩu hiện tại"
+        required
+        class="flex max-sm:flex-col justify-between items-start gap-4"
+      >
+        <UInput v-model="state.oldPassword" type="password" autocomplete="current-password" />
       </UFormField>
-
-      <UFormField name="new">
-        <UInput
-          v-model="password.new"
-          type="password"
-          placeholder="New password"
-          class="w-full"
-        />
+      <USeparator />
+      <UFormField
+        name="newPassword"
+        label="Mật khẩu mới"
+        required
+        class="flex max-sm:flex-col justify-between items-start gap-4"
+      >
+        <UInput v-model="state.newPassword" type="password" autocomplete="new-password" />
       </UFormField>
-
-      <UButton label="Update" class="w-fit" type="submit" />
-    </UForm>
-  </UPageCard>
-
-  <UPageCard
-    title="Account"
-    description="No longer want to use our service? You can delete your account here. This action is not reversible. All information related to this account will be deleted permanently."
-    class="bg-linear-to-tl from-error/10 from-5% to-default"
-  >
-    <template #footer>
-      <UButton label="Delete account" color="error" />
-    </template>
-  </UPageCard>
+      <USeparator />
+      <UFormField
+        name="confirm"
+        label="Xác nhận mật khẩu mới"
+        required
+        class="flex max-sm:flex-col justify-between items-start gap-4"
+      >
+        <UInput v-model="state.confirm" type="password" autocomplete="new-password" />
+      </UFormField>
+    </UPageCard>
+  </UForm>
 </template>

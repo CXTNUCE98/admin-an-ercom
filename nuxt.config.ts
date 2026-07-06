@@ -3,6 +3,9 @@ import { createResolver } from "@nuxt/kit";
 const { resolve } = createResolver(import.meta.url);
 
 export default defineNuxtConfig({
+  // Admin là trang nội bộ, không cần SEO → chạy SPA cho nhẹ.
+  ssr: false,
+
   modules: [
     '@nuxt/eslint',
     '@nuxt/ui',
@@ -37,7 +40,7 @@ export default defineNuxtConfig({
     endpoints: {
       anErcom: {
         url:
-          process.env.NUXT_PUBLIC_API_BASE || "http://localhost:9001/",
+          process.env.NUXT_PUBLIC_API_BASE || "http://localhost:3001/",
         schema: resolve("./schemas/anErcom.json"),
       },
     },
@@ -46,7 +49,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase:
-        process.env.NUXT_PUBLIC_API_BASE || "http://localhost:9001/",
+        process.env.NUXT_PUBLIC_API_BASE || "http://localhost:3001/",
     },
   },
 })
