@@ -32,10 +32,11 @@ const stats = computed(() => [
   { label: 'Khách hàng', value: formatNumber(overview.value?.totalUsers ?? 0), icon: 'i-lucide-users', color: 'text-purple-500' }
 ])
 
-// Bar chart doanh thu — chuẩn hoá chiều cao theo max
+// Bar chart doanh thu — chuẩn hoá chiều cao theo max.
+// Tháng không có doanh thu (0) vẫn hiển thị cột tối thiểu để hover xem giá trị.
 const maxRevenue = computed(() => Math.max(1, ...monthly.value.map(m => m.revenue)))
 function barHeight(revenue: number) {
-  return `${Math.round((revenue / maxRevenue.value) * 100)}%`
+  return `${(revenue / maxRevenue.value) * 100}%`
 }
 </script>
 
@@ -78,17 +79,17 @@ function barHeight(revenue: number) {
         </div>
         <div v-else class="flex items-end gap-2 h-48">
           <div v-for="m in monthly" :key="m.month" class="flex-1 flex flex-col items-center gap-1 group">
-            <div class="relative w-full flex-1 flex items-end">
+            <div class="w-full flex-1 flex items-end">
               <div
-                class="w-full bg-primary/70 group-hover:bg-primary rounded-t transition-all"
+                class="relative w-full min-h-[6px] bg-primary/70 group-hover:bg-primary rounded-t transition-all"
                 :style="{ height: barHeight(m.revenue) }"
               >
-                <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-muted opacity-0 group-hover:opacity-100 whitespace-nowrap">
+                <span class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 text-xs text-muted opacity-0 group-hover:opacity-100 whitespace-nowrap">
                   {{ formatPrice(m.revenue) }}
                 </span>
               </div>
             </div>
-            <span class="text-[10px] text-muted text-center">{{ m.month }}</span>
+            <span class="text-xs text-muted text-center">{{ m.month }}</span>
           </div>
         </div>
       </UCard>
