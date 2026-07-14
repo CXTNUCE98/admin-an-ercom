@@ -66,12 +66,22 @@ export interface OrderItem {
     images: string[]
     brand: string
   } | null
+  combo?: {
+    id: string
+    name: string
+    slug: string
+    image: string | null
+  } | null
 }
 
 export interface Order {
   id: string
   userId: string
   status: OrderStatus
+  subtotal?: number
+  discount?: number
+  shippingFee?: number
+  couponCode?: string | null
   totalPrice: number
   shippingAddress: string
   phone: string

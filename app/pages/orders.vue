@@ -68,14 +68,25 @@ const statusOptions = [
   { label: 'Đã huỷ', value: 'CANCELLED' }
 ]
 
-// Các bước chuyển trạng thái cho slideover
-const statusFlow: { value: OrderStatus, label: string }[] = [
-  { value: 'PENDING', label: 'Chờ xác nhận' },
-  { value: 'CONFIRMED', label: 'Đã xác nhận' },
-  { value: 'SHIPPING', label: 'Đang giao' },
-  { value: 'DELIVERED', label: 'Đã giao' },
-  { value: 'CANCELLED', label: 'Đã huỷ' }
-]
+// State-machine trạng thái — KHỚP với BE (order.service ALLOWED_TRANSITIONS).
+// Chỉ cho phép các bước hợp lệ để tránh lỗi 400 từ BE.
+const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  PENDING: ['CONFIRMED', 'CANCELLED'],
+  CONFIRMED: ['SHIPPING', 'CANCELLED'],
+  SHIPPING: ['DELIVERED'],
+  DELIVERED: [],
+  CANCELLED: []
+}
+
+// Các bước chuyển trạng thái hợp lệ từ trạng thái hiện tại của đơn đang xem.
+const statusFlow = computed<{ value: OrderStatus, label: string }[]>(() => {
+  const current = selectedOrder.value?.status
+  if (!current) return []
+  return ALLOWED_TRANSITIONS[current].map((value) => ({
+    value,
+    label: ORDER_STATUS_LABEL[value]
+  }))
+})
 
 const columns = [
   { id: 'id', header: 'Mã đơn' },
@@ -174,19 +185,19 @@ const columns = [
               {{ ORDER_STATUS_LABEL[selectedOrder.status] }}
             </UBadge>
           </div>
-          <div class="flex flex-wrap gap-2">
+          <div v-if="statusFlow.length" class="flex flex-wrap gap-2">
             <UButton
               v-for="s in statusFlow"
               :key="s.value"
               :label="s.label"
               size="xs"
-              :color="s.value === selectedOrder.status ? 'primary' : 'neutral'"
-              :variant="s.value === selectedOrder.status ? 'solid' : 'outline'"
-              :disabled="s.value === selectedOrder.status"
+              :color="s.value === 'CANCELLED' ? 'error' : 'primary'"
+              variant="outline"
               :loading="updateStatus.isPending.value"
               @click="changeStatus(s.value)"
             />
           </div>
+          <p v-else class="text-xs text-muted">Đơn đã kết thúc, không thể đổi trạng thái.</p>
         </div>
 
         <USeparator />
@@ -215,13 +226,16 @@ const columns = [
               class="flex items-center gap-3"
             >
               <UAvatar
-                :src="item.product?.images?.[0]"
-                :alt="item.product?.name"
+                :src="item.product?.images?.[0] ?? item.combo?.image ?? undefined"
+                :alt="item.product?.name ?? item.combo?.name"
                 size="sm"
                 :ui="{ rounded: 'rounded-md' }"
               />
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium truncate">{{ item.product?.name ?? 'Sản phẩm đã xoá' }}</p>
+                <p class="text-sm font-medium truncate">
+                  {{ item.product?.name ?? item.combo?.name ?? 'Sản phẩm đã xoá' }}
+                  <span v-if="item.combo" class="text-xs text-primary">(Combo)</span>
+                </p>
                 <p class="text-xs text-muted">{{ formatPrice(item.price) }} × {{ item.quantity }}</p>
               </div>
               <span class="text-sm font-medium">{{ formatPrice(item.price * item.quantity) }}</span>
