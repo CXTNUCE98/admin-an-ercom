@@ -68,30 +68,8 @@ export const useAuth = () => {
     }
   })
 
-  // Mutation: đăng ký
-  const registerMutation = useMutation({
-    mutationFn: (vars: { email: string, password: string, fullName: string }) =>
-      $anErcom('/auth/register', {
-        method: 'POST',
-        body: { email: vars.email, password: vars.password, fullName: vars.fullName }
-      }),
-    onSuccess: async (_, variables) => {
-      toast.add({
-        title: 'Đăng ký thành công',
-        description: 'Đang đăng nhập...',
-        color: 'success',
-        icon: 'i-lucide-circle-check'
-      })
-      await loginMutation.mutateAsync({ email: variables.email, password: variables.password })
-    }
-  })
-
   async function login(email: string, password: string) {
     await loginMutation.mutateAsync({ email, password })
-  }
-
-  async function register(email: string, password: string, fullName: string) {
-    await registerMutation.mutateAsync({ email, password, fullName })
   }
 
   async function fetchMe() {
@@ -127,10 +105,8 @@ export const useAuth = () => {
     isLoggedIn,
     isAdmin,
     login,
-    register,
     fetchMe,
     logout,
-    loginMutation,
-    registerMutation
+    loginMutation
   }
 }

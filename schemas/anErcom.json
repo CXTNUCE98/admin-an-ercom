@@ -72,6 +72,56 @@
         ]
       }
     },
+    "/auth/forgot-password": {
+      "post": {
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Yêu cầu đặt lại mật khẩu (gửi token qua email)",
+        "tags": [
+          "Xác thực (Auth)"
+        ]
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Đặt lại mật khẩu bằng token",
+        "tags": [
+          "Xác thực (Auth)"
+        ]
+      }
+    },
     "/auth/me": {
       "get": {
         "operationId": "AuthController_getMe",
@@ -129,6 +179,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "maximum": 100,
               "example": 10,
               "type": "number"
             }
@@ -277,6 +328,30 @@
           }
         },
         "summary": "Lấy tất cả danh mục sản phẩm",
+        "tags": [
+          "Danh mục Sản phẩm (Product Categories)"
+        ]
+      }
+    },
+    "/product-categories/slug/{slug}": {
+      "get": {
+        "operationId": "ProductCategoryController_findBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Lấy danh mục theo slug",
         "tags": [
           "Danh mục Sản phẩm (Product Categories)"
         ]
@@ -439,6 +514,36 @@
             }
           },
           {
+            "name": "priceMin",
+            "required": false,
+            "in": "query",
+            "description": "Giá tối thiểu",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "priceMax",
+            "required": false,
+            "in": "query",
+            "description": "Giá tối đa",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "tags",
+            "required": false,
+            "in": "query",
+            "description": "Lọc theo tags (phân cách dấu phẩy hoặc mảng)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
             "name": "status",
             "required": false,
             "in": "query",
@@ -465,6 +570,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "maximum": 100,
               "example": 12,
               "type": "number"
             }
@@ -692,6 +798,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "maximum": 100,
               "example": 10,
               "type": "number"
             }
@@ -746,6 +853,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "maximum": 100,
               "example": 10,
               "type": "number"
             }
@@ -816,6 +924,35 @@
         ]
       }
     },
+    "/orders/{id}/cancel": {
+      "patch": {
+        "operationId": "OrderController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Huỷ đơn hàng của tôi (chỉ khi chưa giao)",
+        "tags": [
+          "Đơn hàng (Orders)"
+        ]
+      }
+    },
     "/orders/{id}/status": {
       "patch": {
         "operationId": "OrderController_updateStatus",
@@ -852,6 +989,145 @@
         "summary": "Cập nhật trạng thái đơn hàng (Admin)",
         "tags": [
           "Đơn hàng (Orders)"
+        ]
+      }
+    },
+    "/coupons/apply": {
+      "post": {
+        "operationId": "CouponController_apply",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyCouponDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Kiểm tra & tính giảm giá cho subtotal (công khai)",
+        "tags": [
+          "Mã giảm giá (Coupons)"
+        ]
+      }
+    },
+    "/coupons": {
+      "post": {
+        "operationId": "CouponController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCouponDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo mã giảm giá (Admin)",
+        "tags": [
+          "Mã giảm giá (Coupons)"
+        ]
+      },
+      "get": {
+        "operationId": "CouponController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách mã giảm giá (Admin)",
+        "tags": [
+          "Mã giảm giá (Coupons)"
+        ]
+      }
+    },
+    "/coupons/{id}": {
+      "patch": {
+        "operationId": "CouponController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCouponDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật mã giảm giá (Admin)",
+        "tags": [
+          "Mã giảm giá (Coupons)"
+        ]
+      },
+      "delete": {
+        "operationId": "CouponController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xoá mã giảm giá (Admin)",
+        "tags": [
+          "Mã giảm giá (Coupons)"
         ]
       }
     },
@@ -952,7 +1228,7 @@
                       "type": "string",
                       "format": "binary"
                     },
-                    "description": "Danh sách file ảnh (tối đa 10)"
+                    "description": "Danh sách file ảnh (tối đa 10, ≤5MB, jpeg/png/webp/gif)"
                   }
                 },
                 "required": [
@@ -975,6 +1251,739 @@
         "summary": "Upload nhiều ảnh lên Cloudinary, trả về mảng URL",
         "tags": [
           "Upload"
+        ]
+      }
+    },
+    "/reviews/product/{productId}": {
+      "get": {
+        "operationId": "ReviewController_findByProduct",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "approved",
+            "required": false,
+            "in": "query",
+            "description": "Lọc trạng thái duyệt (Admin)",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Danh sách đánh giá đã duyệt của 1 sản phẩm",
+        "tags": [
+          "Đánh giá (Reviews)"
+        ]
+      }
+    },
+    "/reviews": {
+      "get": {
+        "operationId": "ReviewController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "approved",
+            "required": false,
+            "in": "query",
+            "description": "Lọc trạng thái duyệt (Admin)",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách tất cả đánh giá (Admin)",
+        "tags": [
+          "Đánh giá (Reviews)"
+        ]
+      },
+      "post": {
+        "operationId": "ReviewController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo đánh giá (yêu cầu đã mua)",
+        "tags": [
+          "Đánh giá (Reviews)"
+        ]
+      }
+    },
+    "/reviews/{id}": {
+      "patch": {
+        "operationId": "ReviewController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sửa đánh giá của mình",
+        "tags": [
+          "Đánh giá (Reviews)"
+        ]
+      },
+      "delete": {
+        "operationId": "ReviewController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xoá đánh giá (chủ đánh giá hoặc Admin)",
+        "tags": [
+          "Đánh giá (Reviews)"
+        ]
+      }
+    },
+    "/reviews/{id}/approve": {
+      "patch": {
+        "operationId": "ReviewController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Duyệt đánh giá (Admin)",
+        "tags": [
+          "Đánh giá (Reviews)"
+        ]
+      }
+    },
+    "/reviews/{id}/reject": {
+      "patch": {
+        "operationId": "ReviewController_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bỏ duyệt đánh giá (Admin)",
+        "tags": [
+          "Đánh giá (Reviews)"
+        ]
+      }
+    },
+    "/wishlist": {
+      "get": {
+        "operationId": "WishlistController_findMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách yêu thích của tôi",
+        "tags": [
+          "Yêu thích (Wishlist)"
+        ]
+      }
+    },
+    "/wishlist/{productId}": {
+      "post": {
+        "operationId": "WishlistController_add",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thêm sản phẩm vào yêu thích",
+        "tags": [
+          "Yêu thích (Wishlist)"
+        ]
+      },
+      "delete": {
+        "operationId": "WishlistController_remove",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bỏ sản phẩm khỏi yêu thích",
+        "tags": [
+          "Yêu thích (Wishlist)"
+        ]
+      }
+    },
+    "/addresses": {
+      "get": {
+        "operationId": "AddressController_findMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách địa chỉ của tôi",
+        "tags": [
+          "Sổ địa chỉ (Addresses)"
+        ]
+      },
+      "post": {
+        "operationId": "AddressController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thêm địa chỉ",
+        "tags": [
+          "Sổ địa chỉ (Addresses)"
+        ]
+      }
+    },
+    "/addresses/{id}": {
+      "patch": {
+        "operationId": "AddressController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật địa chỉ",
+        "tags": [
+          "Sổ địa chỉ (Addresses)"
+        ]
+      },
+      "delete": {
+        "operationId": "AddressController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xoá địa chỉ",
+        "tags": [
+          "Sổ địa chỉ (Addresses)"
+        ]
+      }
+    },
+    "/locations/provinces": {
+      "get": {
+        "operationId": "LocationController_getProvinces",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Danh sách tỉnh/thành phố",
+        "tags": [
+          "Đơn vị hành chính (Locations)"
+        ]
+      }
+    },
+    "/locations/provinces/{code}/wards": {
+      "get": {
+        "operationId": "LocationController_getWards",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "description": "Mã tỉnh/thành",
+            "schema": {
+              "example": "01",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Danh sách phường/xã theo mã tỉnh",
+        "tags": [
+          "Đơn vị hành chính (Locations)"
+        ]
+      }
+    },
+    "/combos": {
+      "get": {
+        "operationId": "ComboController_findAllPublic",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Danh sách combo đang bán (công khai)",
+        "tags": [
+          "Combo"
+        ]
+      },
+      "post": {
+        "operationId": "ComboController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateComboDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo combo (Admin)",
+        "tags": [
+          "Combo"
+        ]
+      }
+    },
+    "/combos/all": {
+      "get": {
+        "operationId": "ComboController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách tất cả combo (Admin)",
+        "tags": [
+          "Combo"
+        ]
+      }
+    },
+    "/combos/slug/{slug}": {
+      "get": {
+        "operationId": "ComboController_findBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Chi tiết combo theo slug",
+        "tags": [
+          "Combo"
+        ]
+      }
+    },
+    "/combos/{id}": {
+      "patch": {
+        "operationId": "ComboController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateComboDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật combo (Admin)",
+        "tags": [
+          "Combo"
+        ]
+      },
+      "delete": {
+        "operationId": "ComboController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xoá combo (Admin)",
+        "tags": [
+          "Combo"
+        ]
+      }
+    },
+    "/cart": {
+      "get": {
+        "operationId": "CartController_getCart",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy giỏ hàng của tôi",
+        "tags": [
+          "Giỏ hàng (Cart)"
+        ]
+      },
+      "put": {
+        "operationId": "CartController_replace",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceCartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thay toàn bộ giỏ hàng",
+        "tags": [
+          "Giỏ hàng (Cart)"
+        ]
+      },
+      "delete": {
+        "operationId": "CartController_clear",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xoá sạch giỏ hàng",
+        "tags": [
+          "Giỏ hàng (Cart)"
+        ]
+      }
+    },
+    "/cart/merge": {
+      "post": {
+        "operationId": "CartController_merge",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceCartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gộp giỏ khách vào giỏ user (khi đăng nhập)",
+        "tags": [
+          "Giỏ hàng (Cart)"
         ]
       }
     }
@@ -1038,6 +2047,36 @@
         "required": [
           "email",
           "password"
+        ]
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token nhận từ email"
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "matkhaumoi123",
+            "minLength": 6
+          }
+        },
+        "required": [
+          "token",
+          "newPassword"
         ]
       },
       "UserResponseDto": {
@@ -1160,6 +2199,23 @@
           }
         }
       },
+      "ProductSpecDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "Bộ máy"
+          },
+          "value": {
+            "type": "string",
+            "example": "Automatic"
+          }
+        },
+        "required": [
+          "label",
+          "value"
+        ]
+      },
       "CreateProductDto": {
         "type": "object",
         "properties": {
@@ -1234,6 +2290,13 @@
           },
           "categoryId": {
             "type": "string"
+          },
+          "specs": {
+            "description": "Thông số kỹ thuật",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductSpecDto"
+            }
           }
         },
         "required": [
@@ -1317,6 +2380,13 @@
           },
           "categoryId": {
             "type": "string"
+          },
+          "specs": {
+            "description": "Thông số kỹ thuật",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductSpecDto"
+            }
           }
         }
       },
@@ -1325,7 +2395,11 @@
         "properties": {
           "productId": {
             "type": "string",
-            "description": "ID sản phẩm"
+            "description": "ID sản phẩm (nếu là sản phẩm lẻ)"
+          },
+          "comboId": {
+            "type": "string",
+            "description": "ID combo (nếu là combo)"
           },
           "quantity": {
             "type": "number",
@@ -1333,7 +2407,6 @@
           }
         },
         "required": [
-          "productId",
           "quantity"
         ]
       },
@@ -1366,6 +2439,10 @@
               "MOMO"
             ],
             "default": "COD"
+          },
+          "couponCode": {
+            "type": "string",
+            "description": "Mã giảm giá (tuỳ chọn)"
           }
         },
         "required": [
@@ -1390,6 +2467,356 @@
         },
         "required": [
           "status"
+        ]
+      },
+      "ApplyCouponDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "IRONMAN10"
+          },
+          "subtotal": {
+            "type": "number",
+            "example": 1200000,
+            "description": "Tạm tính giỏ hàng (VND)"
+          }
+        },
+        "required": [
+          "code",
+          "subtotal"
+        ]
+      },
+      "CreateCouponDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "IRONMAN10"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PERCENT",
+              "FIXED"
+            ],
+            "default": "PERCENT"
+          },
+          "value": {
+            "type": "number",
+            "example": 10,
+            "description": "PERCENT: %, FIXED: số tiền VND"
+          },
+          "minOrder": {
+            "type": "number",
+            "example": 500000,
+            "description": "Giá trị đơn tối thiểu"
+          },
+          "maxDiscount": {
+            "type": "number",
+            "example": 100000,
+            "description": "Giảm tối đa (cho PERCENT)"
+          },
+          "usageLimit": {
+            "type": "number",
+            "example": 100,
+            "description": "Số lần dùng tối đa"
+          },
+          "startsAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "code",
+          "type",
+          "value"
+        ]
+      },
+      "UpdateCouponDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "IRONMAN10"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PERCENT",
+              "FIXED"
+            ],
+            "default": "PERCENT"
+          },
+          "value": {
+            "type": "number",
+            "example": 10,
+            "description": "PERCENT: %, FIXED: số tiền VND"
+          },
+          "minOrder": {
+            "type": "number",
+            "example": 500000,
+            "description": "Giá trị đơn tối thiểu"
+          },
+          "maxDiscount": {
+            "type": "number",
+            "example": 100000,
+            "description": "Giảm tối đa (cho PERCENT)"
+          },
+          "usageLimit": {
+            "type": "number",
+            "example": 100,
+            "description": "Số lần dùng tối đa"
+          },
+          "startsAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "CreateReviewDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "ID sản phẩm"
+          },
+          "rating": {
+            "type": "number",
+            "example": 5,
+            "minimum": 1,
+            "maximum": 5
+          },
+          "comment": {
+            "type": "string",
+            "description": "Nội dung đánh giá"
+          }
+        },
+        "required": [
+          "productId",
+          "rating"
+        ]
+      },
+      "UpdateReviewDto": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "number",
+            "example": 4,
+            "minimum": 1,
+            "maximum": 5
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateAddressDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "Nguyễn Văn A"
+          },
+          "phone": {
+            "type": "string",
+            "example": "0901234567"
+          },
+          "line": {
+            "type": "string",
+            "example": "123 Nguyễn Huệ",
+            "description": "Số nhà, tên đường"
+          },
+          "provinceCode": {
+            "type": "string",
+            "example": "79",
+            "description": "Mã tỉnh/thành (GET /locations/provinces)"
+          },
+          "wardCode": {
+            "type": "string",
+            "example": "26740",
+            "description": "Mã phường/xã (GET /locations/provinces/:code/wards)"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "fullName",
+          "phone",
+          "line",
+          "provinceCode",
+          "wardCode"
+        ]
+      },
+      "UpdateAddressDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "Nguyễn Văn A"
+          },
+          "phone": {
+            "type": "string",
+            "example": "0901234567"
+          },
+          "line": {
+            "type": "string",
+            "example": "123 Nguyễn Huệ",
+            "description": "Số nhà, tên đường"
+          },
+          "provinceCode": {
+            "type": "string",
+            "example": "79",
+            "description": "Mã tỉnh/thành (GET /locations/provinces)"
+          },
+          "wardCode": {
+            "type": "string",
+            "example": "26740",
+            "description": "Mã phường/xã (GET /locations/provinces/:code/wards)"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "ComboItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "ID sản phẩm"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "CreateComboDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Combo Quý Ông"
+          },
+          "slug": {
+            "type": "string",
+            "example": "combo-quy-ong"
+          },
+          "description": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "comboPrice": {
+            "type": "number",
+            "example": 1500000,
+            "description": "Giá combo (VND)"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ComboItemDto"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "slug",
+          "comboPrice",
+          "items"
+        ]
+      },
+      "UpdateComboDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Combo Quý Ông"
+          },
+          "slug": {
+            "type": "string",
+            "example": "combo-quy-ong"
+          },
+          "description": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "comboPrice": {
+            "type": "number",
+            "example": 1500000,
+            "description": "Giá combo (VND)"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ComboItemDto"
+            }
+          }
+        }
+      },
+      "CartItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "ID sản phẩm (nếu là sản phẩm lẻ)"
+          },
+          "comboId": {
+            "type": "string",
+            "description": "ID combo (nếu là combo)"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "quantity"
+        ]
+      },
+      "ReplaceCartDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       }
     }

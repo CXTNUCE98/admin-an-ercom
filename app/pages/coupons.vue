@@ -15,12 +15,24 @@ const selected = ref<Coupon | null>(null)
 const form = reactive({
   code: '', type: 'PERCENT' as 'PERCENT' | 'FIXED', value: 0,
   minOrder: 0, maxDiscount: null as number | null,
-  usageLimit: null as number | null, isActive: true
+  usageLimit: null as number | null,
+  startsAt: '', expiresAt: '', isActive: true
 })
+
+// ISO (BE) → giá trị input datetime-local (giờ địa phương), và ngược lại.
+function isoToLocalInput(iso: string | null): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+function localInputToIso(v: string): string | null {
+  return v ? new Date(v).toISOString() : null
+}
 
 function openCreate() {
   selected.value = null
-  Object.assign(form, { code: '', type: 'PERCENT', value: 0, minOrder: 0, maxDiscount: null, usageLimit: null, isActive: true })
+  Object.assign(form, { code: '', type: 'PERCENT', value: 0, minOrder: 0, maxDiscount: null, usageLimit: null, startsAt: '', expiresAt: '', isActive: true })
   isFormOpen.value = true
 }
 
@@ -28,13 +40,24 @@ function openEdit(c: Coupon) {
   selected.value = c
   Object.assign(form, {
     code: c.code, type: c.type, value: c.value, minOrder: c.minOrder,
-    maxDiscount: c.maxDiscount, usageLimit: c.usageLimit, isActive: c.isActive
+    maxDiscount: c.maxDiscount, usageLimit: c.usageLimit,
+    startsAt: isoToLocalInput(c.startsAt), expiresAt: isoToLocalInput(c.expiresAt),
+    isActive: c.isActive
   })
   isFormOpen.value = true
 }
 
 async function save() {
-  const body = { ...form }
+  // Chặn lỗi logic: ngày bắt đầu phải trước ngày hết hạn.
+  if (form.startsAt && form.expiresAt && new Date(form.startsAt) >= new Date(form.expiresAt)) {
+    useToast().add({ title: 'Ngày bắt đầu phải trước ngày hết hạn', color: 'error', icon: 'i-lucide-circle-x' })
+    return
+  }
+  const body = {
+    ...form,
+    startsAt: localInputToIso(form.startsAt),
+    expiresAt: localInputToIso(form.expiresAt),
+  }
   if (selected.value) {
     await updateCoupon.mutateAsync({ id: selected.value.id, body })
   } else {
@@ -141,6 +164,14 @@ const columns = [
         <UFormField label="Giới hạn lượt dùng">
           <UInput v-model.number="form.usageLimit" type="number" class="w-full" min="1" placeholder="Không giới hạn" />
         </UFormField>
+        <div class="grid grid-cols-2 gap-4">
+          <UFormField label="Bắt đầu" help="Để trống = hiệu lực ngay">
+            <UInput v-model="form.startsAt" type="datetime-local" class="w-full" />
+          </UFormField>
+          <UFormField label="Hết hạn" help="Để trống = không hết hạn">
+            <UInput v-model="form.expiresAt" type="datetime-local" class="w-full" />
+          </UFormField>
+        </div>
         <UCheckbox v-model="form.isActive" label="Kích hoạt" />
       </div>
     </template>

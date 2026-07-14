@@ -6,6 +6,17 @@ definePageMeta({ middleware: 'auth' })
 const { combosQuery } = useCombos()
 const { createCombo, updateCombo, deleteCombo } = useComboMutations()
 const { productsQuery } = useProducts()
+const { uploadImages, uploading } = useUpload()
+
+// ─── Upload ảnh combo (1 ảnh đại diện) ────────────────────────────────────────
+const fileInputRef = ref<HTMLInputElement | null>(null)
+async function onImageChange(e: Event) {
+  const files = Array.from((e.target as HTMLInputElement).files ?? [])
+  if (!files.length) return
+  if (fileInputRef.value) fileInputRef.value.value = ''
+  const [url] = await uploadImages([files[0]!])
+  if (url) form.image = url
+}
 
 const combos = computed(() => combosQuery.data.value ?? [])
 const productOptions = computed(() =>
@@ -139,8 +150,30 @@ const columns = [
           <UTextarea v-model="form.description" class="w-full" :rows="2" />
         </UFormField>
         <div class="grid grid-cols-2 gap-4">
-          <UFormField label="Ảnh (URL)">
-            <UInput v-model="form.image" class="w-full" placeholder="https://..." />
+          <UFormField label="Ảnh combo">
+            <div class="flex items-center gap-3">
+              <div v-if="form.image" class="relative group size-16 rounded-md overflow-hidden border border-default">
+                <img :src="form.image" alt="combo" class="size-full object-cover" />
+                <button
+                  type="button"
+                  class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                  @click="form.image = ''"
+                >
+                  <UIcon name="i-lucide-trash" class="text-white size-4" />
+                </button>
+              </div>
+              <input ref="fileInputRef" type="file" accept="image/*" class="hidden" @change="onImageChange" />
+              <UButton
+                type="button"
+                icon="i-lucide-image-plus"
+                :label="form.image ? 'Đổi ảnh' : 'Chọn ảnh'"
+                color="neutral"
+                variant="outline"
+                size="sm"
+                :loading="uploading"
+                @click="fileInputRef?.click()"
+              />
+            </div>
           </UFormField>
           <UFormField label="Giá combo (VND)">
             <UInput v-model.number="form.comboPrice" type="number" class="w-full" min="0" />

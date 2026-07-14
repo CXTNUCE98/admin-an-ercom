@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
-import type { Order, OrdersResponse, OrderStats, OrderStatus } from '~/types'
+import type { Order, OrdersResponse, OrderStatus } from '~/types'
 
 interface OrderQuery {
   status?: OrderStatus | 'all'
@@ -52,24 +52,6 @@ export const useOrder = (id: Ref<string | null>) => {
   })
 
   return { orderQuery }
-}
-
-/** Thống kê đơn — GET /orders/stats */
-export const useOrderStats = () => {
-  const { token } = useAuth()
-
-  const statsQuery = useQuery({
-    queryKey: ['orders', 'stats'],
-    queryFn: async (): Promise<OrderStats> => {
-      const data = await $anErcom('/orders/stats', {
-        headers: { Authorization: `Bearer ${token.value}` }
-      })
-      return data as unknown as OrderStats
-    },
-    enabled: computed(() => !!token.value)
-  })
-
-  return { statsQuery }
 }
 
 /** Cập nhật trạng thái đơn — PATCH /orders/{id}/status */
