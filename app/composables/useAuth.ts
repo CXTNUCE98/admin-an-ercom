@@ -24,25 +24,28 @@ export const useAuth = () => {
   const isLoggedIn = computed(() => !!token.value)
   const isAdmin = computed(() => user.value?.role === 'ADMIN')
 
+  const queryFn = async (): Promise<AuthUser> => {
+    const data = await $anErcom('/auth/me', {
+      headers: { Authorization: `Bearer ${token.value}` }
+    })
+    return data as unknown as AuthUser
+  }
+
   // Query: lấy thông tin user hiện tại
-  const { refetch: refetchMe } = useQuery({
+  const { refetch: refetchMe, data: authData } = useQuery({
     queryKey: ['auth', 'me'],
-    queryFn: async (): Promise<AuthUser> => {
-      const data = await $anErcom('/auth/me', {
-        headers: { Authorization: `Bearer ${token.value}` }
-      })
-      return data as unknown as AuthUser
-    },
+    queryFn,
     enabled: isLoggedIn,
     retry: false
   })
 
   // Sync user state từ query result
   watch(
-    () => queryClient.getQueryData<AuthUser>(['auth', 'me']),
+    authData,
     (data) => {
       if (data) user.value = data
-    }
+    },
+    { immediate: true }
   )
 
   // Mutation: đăng nhập
@@ -54,8 +57,7 @@ export const useAuth = () => {
       }),
     onSuccess: async (data) => {
       token.value = (data as unknown as { accessToken: string }).accessToken
-      const result = await refetchMe()
-      if (result.data) user.value = result.data
+      await fetchMe()
       toast.add({
         title: 'Đăng nhập thành công',
         description: 'Chào mừng bạn trở lại!',
@@ -94,8 +96,16 @@ export const useAuth = () => {
 
   async function fetchMe() {
     if (!token.value) return
-    const result = await refetchMe()
-    if (result.data) user.value = result.data
+    try {
+      const data = await queryClient.fetchQuery({
+        queryKey: ['auth', 'me'],
+        queryFn,
+        staleTime: 0
+      })
+      if (data) user.value = data
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   function logout() {
